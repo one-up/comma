@@ -9,10 +9,11 @@ module RenderAsCSV
     content  = options.delete(:csv)
     style    = options.delete(:style) || :default
     filename = options.delete(:filename)
+    encoding = options.delete(:encoding) || 'utf-8'
 
     headers.merge!(
       'Content-Transfer-Encoding' => 'binary',
-      'Content-Type'              => 'text/csv; charset=utf-8'
+      'Content-Type'              => "text/csv; charset=#{encoding}"
     )
     filename_header_value = "attachment"
     filename_header_value += "; filename=\"#{filename}\"" if filename.present?
@@ -22,7 +23,8 @@ module RenderAsCSV
 
     render_stream :status => 200,
                   :content => Array(content),
-                  :style => style
+                  :style => style,
+                  :encoding => encoding
   end
 
   protected
@@ -31,10 +33,11 @@ module RenderAsCSV
     status  = options[:status]
     content = options[:content]
     style   = options[:style]
+    encoding = options[:encoding]
 
     render :status => status, :text => Proc.new { |response, output|
-      output.write FasterCSV.generate_line(content.first.to_comma_headers(style))
-      content.each { |line| output.write FasterCSV.generate_line(line.to_comma(style)) }
+      output.write FasterCSV.generate_line(content.first.to_comma_headers(style), :encoding => encoding)
+      content.each { |line| output.write FasterCSV.generate_line(line.to_comma(style), :encoding => encoding) }
     }
   end
 end
