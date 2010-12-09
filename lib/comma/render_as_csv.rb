@@ -35,10 +35,20 @@ module RenderAsCSV
     style   = options[:style]
     encoding = options[:encoding]
 
-    render :status => status, :text => Proc.new { |response, output|
-      output.write FasterCSV.generate_line(content.first.to_comma_headers(style), :encoding => encoding)
-      content.each { |line| output.write FasterCSV.generate_line(line.to_comma(style), :encoding => encoding) }
-    }
+    if Rails::VERSION::MAJOR == 3 && Rails::VERSION::MINOR == 0 && Rails::VERSION::TINY < 4
+      # NOTE: temporary change until Rails 3.0.4 release ...
+      # NOTE: see https://rails.lighthouseapp.com/projects/8994/tickets/4554-render-text-proc-regression
+      render :status => status, :text => StringIO.new.tap {|output|
+        output.write FasterCSV.generate_line(content.first.to_comma_headers(style))
+        content.each { |line| output.write FasterCSV.generate_line(line.to_comma(style)) }
+      }.string.encode(encoding)
+    else
+      # better
+      render :status => status, :text => Proc.new { |response, output|
+        output.write FasterCSV.generate_line(content.first.to_comma_headers(style), :encoding => encoding)
+        content.each { |line| output.write FasterCSV.generate_line(line.to_comma(style), :encoding => encoding) }
+      }
+    end
   end
 end
 
