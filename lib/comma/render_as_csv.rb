@@ -35,7 +35,7 @@ module RenderAsCSV
     style   = options[:style]
     encoding = options[:encoding]
 
-    if Rails::VERSION::MAJOR == 3 && Rails::VERSION::MINOR == 0 && Rails::VERSION::TINY < 4
+    if Rails::VERSION::MAJOR == 3 && Rails::VERSION::MINOR == 0 # && Rails::VERSION::TINY < 4 # NOTE: not applied in rails 3.0.4
       # NOTE: temporary change until Rails 3.0.4 release ...
       # NOTE: see https://rails.lighthouseapp.com/projects/8994/tickets/4554-render-text-proc-regression
       render :status => status, :text => StringIO.new.tap {|output|
